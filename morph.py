@@ -27,6 +27,7 @@ def update_overdue_tasks(api):
         if task["due_date_utc"]:
             # Convert to user's timezone
             due_date = parse(task["due_date_utc"]).astimezone(user_timezone)
+
             # If due in the past and it's due today,
             # update to end of today (default for all day tasks)
             if due_date <= now and due_date.date() == now.date():
@@ -46,5 +47,6 @@ def main():
         logging.warn('Please set the API token in environment variable.')
         exit()
     api = TodoistAPI(API_TOKEN)
+    api.sync()
     update_overdue_tasks(api)
     api.commit()
