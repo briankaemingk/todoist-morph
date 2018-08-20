@@ -1,6 +1,4 @@
 import morph
-
-from todoist.api import TodoistAPI
 from flask import Flask
 
 app = Flask(__name__)
