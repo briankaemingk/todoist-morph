@@ -1,6 +1,6 @@
 {
   "name": "todoist-morph",
-  "description": "Enhancements to native behavior in todoist",
+  "description": "Enhancements to native behavior in todoist to improve motivation, focus, and flow.",
   "repository": "https://github.com/briankaemingk/todoist_morph",
   "keywords": ["todoist", "flask", "ifttt"]
 }
