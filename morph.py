@@ -14,6 +14,20 @@ def get_token():
     token = os.getenv('TODOIST_APIKEY')
     return token
 
+
+# If due in the past and it's due today,
+# update to end of today (default for all day tasks)
+def update_overdue_to_all_day(due_date, now, task):
+    if due_date <= now and due_date.date() == now.date():
+        print("Identified newly due task: {0}".format(task["content"]))
+        new_due_date = datetime(year=now.year,
+                            month=now.month,
+                            day=now.day,
+                            hour=23,
+                            minute=59,
+                            second=59).astimezone(pytz.utc)
+        return new_due_date
+
 def update_overdue_tasks(api):
     # Get user's timezone
     user_timezone = pytz.timezone(api.state["user"]["tz_info"]["timezone"])
@@ -28,16 +42,9 @@ def update_overdue_tasks(api):
             # Convert to user's timezone
             due_date = parse(task["due_date_utc"]).astimezone(user_timezone)
 
-            # If due in the past and it's due today,
-            # update to end of today (default for all day tasks)
-            if due_date <= now and due_date.date() == now.date():
-                print("Identified newly due task: {0}".format(task["content"]))
-                new_due_date = datetime(year=now.year,
-                                        month=now.month,
-                                        day=now.day,
-                                        hour=23,
-                                        minute=59,
-                                        second=59).astimezone(pytz.utc)
+            new_due_date = update_overdue_to_all_day(due_date, now, task)
+
+            if new_due_date:
                 task.update(due_date_utc=new_due_date)
                 print("Updating task <{0}> to due date: {1}".format(task["content"], new_due_date))
 
