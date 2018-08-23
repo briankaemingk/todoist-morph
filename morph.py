@@ -18,12 +18,12 @@ def get_token():
     token = os.getenv('TODOIST_APIKEY')
     return token
 
+def is_overdue(due_date, now):
+    if due_date <= now and due_date.date() == now.date() : return 1
 
 # If due in the past and it's due today,
 # update to end of today (default for all day tasks)
-def update_overdue_to_all_day(due_date, now, task):
-    if due_date <= now and due_date.date() == now.date():
-        print("Identified newly due task: {0}".format(task["content"]))
+def update_to_all_day(now, task):
         new_due_date = datetime(year=now.year,
                                 month=now.month,
                                 day=now.day,
@@ -32,18 +32,27 @@ def update_overdue_to_all_day(due_date, now, task):
                                 second=59).astimezone(pytz.utc)
         return new_due_date
 
+# Get user's timezone
 def get_user_timezone(api):
     return pytz.timezone(api.state["user"]["tz_info"]["timezone"])
+
+# Get current time in user's timezone
+def get_now_user_timezone(api):
+    user_timezone = get_user_timezone(api)
+    return datetime.now(tz=user_timezone)
 
 def is_recurrance_snooze(task_content):
     return re.search(r'\s{(\d+:\d+)}', task_content)
 
-def update_overdue_tasks(api):
-    # Get user's timezone
-    user_timezone = get_user_timezone(api)
+def parse_task_id(task_url):
+    #URL is in format: https://todoist.com/showTask?id=2690174754
+    task_match = re.search('https:\/\/todoist.com\/showTask\?id=([0-9]+)', task_url)
+    task_id = task_match.group(1)
+    return task_id
 
-    # Get current time in user's timezone
-    now = datetime.now(tz=user_timezone)
+def update_overdue_tasks(api):
+    user_timezone = get_user_timezone(api)
+    now = get_now_user_timezone(api)
 
     # Iterate over tasks, look for tasks to update
     tasks = api.state['items']
@@ -52,14 +61,15 @@ def update_overdue_tasks(api):
             # Convert to user's timezone
             due_date = parse(task["due_date_utc"]).astimezone(user_timezone)
 
-            new_due_date = update_overdue_to_all_day(due_date, now, task)
-
-            if new_due_date:
+            if is_overdue(due_date, now):
+                new_due_date = update_to_all_day(now, task)
                 task.update(due_date_utc=new_due_date)
                 print("Updating task <{0}> to due date: {1}".format(task["content"], new_due_date))
 
 def update_recurrance_date(api, task_url):
     user_timezone = get_user_timezone(api)
+
+    task_id = parse_task_id(task_url)
 
     tasks = api.state['items']
     for task in tasks:
