@@ -50,13 +50,6 @@ def is_recurrance_snooze(task_content):
     return re.search(r'\s{(\d+:\d+)}', task_content)
 
 
-def parse_task_id(task_url):
-    # URL is in format: https://todoist.com/showTask?id=2690174754
-    task_match = re.search('https:\/\/todoist.com\/showTask\?id=([0-9]+)', task_url)
-    task_id = task_match.group(1)
-    return task_id
-
-
 def update_overdue_tasks(api):
     user_timezone = get_user_timezone(api)
     now = get_now_user_timezone(api)
@@ -90,18 +83,20 @@ def replace_due_date_time(new_due_time, due_date_utc, user_timezone):
     return new_due_date_utc_date
 
 
-def update_recurrance_date(api, task_url):
+def update_recurrance_date(api):
     user_timezone = get_user_timezone(api)
-    task_id = parse_task_id(task_url)
-    task = api.items.get_by_id(int(task_id))
-    if task["due_date_utc"] and is_recurrance_snooze(task["content"]):
-        new_due_time = is_recurrance_snooze(task["content"]).group(1)
-        new_due_date_utc = replace_due_date_time(new_due_time, task["due_date_utc"], user_timezone)
-        new_due_date_utc_str = convert_datetime_str(new_due_date_utc)
-        task.update(due_date_utc=new_due_date_utc_str)
-        task.update(content= re.sub(is_recurrance_snooze(task["content"]).group(0), '', task["content"]))
-        api.commit()
 
+    # Iterate over tasks, look for tasks to update
+    tasks = api.state['items']
+    for task in tasks:
+        if task["due_date_utc"]:
+            if task["due_date_utc"] and is_recurrance_snooze(task["content"]):
+                new_due_time = is_recurrance_snooze(task["content"]).group(1)
+                new_due_date_utc = replace_due_date_time(new_due_time, task["due_date_utc"], user_timezone)
+                new_due_date_utc_str = convert_datetime_str(new_due_date_utc)
+                task.update(due_date_utc=new_due_date_utc_str)
+                task.update(content= re.sub(is_recurrance_snooze(task["content"]).group(0), '', task["content"]))
+    api.commit()
 
 def main():
     API_TOKEN = get_token()
@@ -111,6 +106,7 @@ def main():
     api = TodoistAPI(API_TOKEN)
     api.sync()
     update_overdue_tasks(api)
+    update_recurrance_date(api)
     api.commit()
 
 
@@ -121,5 +117,4 @@ def task_complete(task_url):
         exit()
     api = TodoistAPI(API_TOKEN)
     api.sync()
-    update_recurrance_date(api, task_url)
     api.commit()
