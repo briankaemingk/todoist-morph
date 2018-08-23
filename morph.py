@@ -47,7 +47,7 @@ def get_now_user_timezone(api):
 
 
 def is_recurrance_snooze(task_content):
-    return re.search(r'\s{(\d+:\d+)}', task_content)
+    return re.search(r'\s<(\d+:\d+)>', task_content)
 
 
 def update_overdue_tasks(api):
