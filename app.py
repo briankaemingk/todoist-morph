@@ -8,10 +8,11 @@ def index():
     morph.main()
     return 'Completed'
 
-@app.route('/complete')
+@app.route('/complete', methods=['GET', 'POST'])
 def complete():
-    task_url = str(request.data)
-    morph.task_complete(task_url)
+    content = request.get_json()
+    url = content['url']
+    morph.task_complete(url)
     return 'Completed task complete actions.'
 
 if __name__ == '__main__':

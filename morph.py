@@ -68,13 +68,11 @@ def update_overdue_tasks(api):
 
 def update_recurrance_date(api, task_url):
     user_timezone = get_user_timezone(api)
-
     task_id = parse_task_id(task_url)
-
-    tasks = api.state['items']
-    for task in tasks:
-        if task["due_date_utc"] and is_recurrance_snooze(task["content"]):
-            due_time = is_recurrance_snooze(task["content"]).group(1)
+    task = api.items.get_by_id(int(task_id))
+    if task["due_date_utc"] and is_recurrance_snooze(task["content"]):
+        due_time = is_recurrance_snooze(task["content"]).group(1)
+        print(due_time)
 
 def main():
     API_TOKEN = get_token()
