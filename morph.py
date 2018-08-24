@@ -27,13 +27,12 @@ def initiate_api():
     api.sync()
     return api
 
-
+# If the task is due today and it is due in the past
 def is_overdue(due_date, now):
     if due_date <= now and due_date.date() == now.date(): return 1
 
 
-# If due in the past and it's due today,
-# update to end of today (default for all day tasks)
+# Update due date to end of today (default for all day tasks)
 def update_to_all_day(now, task):
     new_due_date = datetime(year=now.year,
                             month=now.month,
@@ -63,26 +62,16 @@ def is_recurrance_snooze(task_content):
     return re.search(r'\s<(\d+:\d+:*\d*)>', task_content)
 
 
-def update_overdue_tasks(user_timezone, now, tasks):
-    for task in tasks:
-        if task["due_date_utc"]:
-            # Convert to user's timezone
-            due_date = parse(task["due_date_utc"]).astimezone(user_timezone)
-
-            if is_overdue(due_date, now):
-                new_due_date = update_to_all_day(now, task)
-                task.update(due_date_utc=new_due_date)
-                print("Updating task <{0}> to due date: {1}".format(task["content"], new_due_date))
-
-
+# Parse time string, convert to datetime object in user's timezone
 def convert_time_str_datetime(time_str, user_timezone):
-    return datetime.strptime(time_str, '%a %d %b %Y %H:%M:%S %z').astimezone(user_timezone)
+    return parse(time_str).astimezone(user_timezone)
 
 
+# Convert a datetime object into the todoist due date string format
 def convert_datetime_str(date):
     return date.strftime('%Y-%m-%dT%H:%M:%S')
 
-
+# Replace with the user-entered hour, minuite and, optionally, second, and convert to utc datetime object
 def replace_due_date_time(new_due_time, due_date_utc, user_timezone):
     due_date_localtz_date = convert_time_str_datetime(due_date_utc, user_timezone)
     new_due_time_split = new_due_time.split(":")
@@ -92,6 +81,17 @@ def replace_due_date_time(new_due_time, due_date_utc, user_timezone):
     return new_due_date_utc_date
 
 
+# Identify overdue tasks and schedule them for all day
+def update_overdue_tasks(user_timezone, now, tasks):
+    for task in tasks:
+        if task["due_date_utc"]:
+            due_date = convert_time_str_datetime(task["due_date_utc"], user_timezone)
+            if is_overdue(due_date, now):
+                new_due_date = update_to_all_day(now, task)
+                task.update(due_date_utc=new_due_date)
+
+
+# Identify tasks with time strings (for example, <5:20>) and re-schedule due-time to that time
 def update_recurrance_date(user_timezone, tasks):
     for task in tasks:
         if task["due_date_utc"] and is_recurrance_snooze(task["content"]):
@@ -112,7 +112,8 @@ def main():
     update_recurrance_date(user_timezone, tasks)
     api.commit()
 
-# Run the following actions when a task is completed, recieves the task URL
+
+# Run the following actions when a task is completed, receives the task URL
 def task_complete(task_url):
     api = initiate_api()
     api.commit()
