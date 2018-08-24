@@ -30,7 +30,7 @@ This is a different flavor of the originally implemented [habitist](https://gith
 
 ## Useage
 
-1. You add habits you want to form as task on todoist with a recurring schedule (could be any recurrance pattern (`every day`, `every week` or `every year`, for example)
+1. You add habits you want to form as task on todoist with a recurring schedule (could be any recurrence pattern (`every day`, `every week` or `every year`, for example)
 
 2. Add `[streak 0]` to the task
 

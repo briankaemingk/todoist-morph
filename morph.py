@@ -1,6 +1,8 @@
 from dotenv import load_dotenv
+
 load_dotenv()
 from pathlib import Path  # python3 only
+
 env_path = Path('.') / '.env'
 load_dotenv(dotenv_path=env_path)
 import os
@@ -9,6 +11,10 @@ from dateutil.parser import parse
 import pytz
 import re
 from todoist.api import TodoistAPI
+import logging
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 
 # Get user's Todoist API Key
@@ -18,14 +24,16 @@ def get_token():
 
 
 # Initiate and sync Todoist API
+# noinspection PyPep8Naming
 def initiate_api():
     API_TOKEN = get_token()
     if not API_TOKEN:
-        logging.warn('Please set the API token in environment variable.')
+        logging.warning('Please set the API token in environment variable.')
         exit()
     api = TodoistAPI(API_TOKEN)
     api.sync()
     return api
+
 
 # If the task is due today and it is due in the past
 def is_overdue(due_date, now):
@@ -33,7 +41,7 @@ def is_overdue(due_date, now):
 
 
 # Update due date to end of today (default for all day tasks)
-def update_to_all_day(now, task):
+def update_to_all_day(now):
     new_due_date = datetime(year=now.year,
                             month=now.month,
                             day=now.day,
@@ -53,12 +61,14 @@ def get_now_user_timezone(api):
     user_timezone = get_user_timezone(api)
     return datetime.now(tz=user_timezone)
 
+
 # Get all tasks
 def get_tasks(api):
     return api.state['items']
 
-# Find hours, minuites and, optionally, seconds
-def is_recurrance_snooze(task_content):
+
+# Find hours, minutes and, optionally, seconds
+def is_recurrence_snooze(task_content):
     return re.search(r'\s<(\d+:\d+:*\d*)>', task_content)
 
 
@@ -71,12 +81,15 @@ def convert_time_str_datetime(time_str, user_timezone):
 def convert_datetime_str(date):
     return date.strftime('%Y-%m-%dT%H:%M:%S')
 
-# Replace with the user-entered hour, minuite and, optionally, second, and convert to utc datetime object
+
+# Replace with the user-entered hour, minute and, optionally, second, and convert to utc datetime object
 def replace_due_date_time(new_due_time, due_date_utc, user_timezone):
     due_date_localtz_date = convert_time_str_datetime(due_date_utc, user_timezone)
     new_due_time_split = new_due_time.split(":")
-    new_due_date_localtz_date = due_date_localtz_date.replace(hour=int(new_due_time_split[0]), minute=int(new_due_time_split[1]))
-    if len(new_due_time_split) > 2 : new_due_date_localtz_date = due_date_localtz_date.replace(second=int(new_due_time_split[2]))
+    new_due_date_localtz_date = due_date_localtz_date.replace(hour=int(new_due_time_split[0]),
+                                                              minute=int(new_due_time_split[1]))
+    if len(new_due_time_split) > 2: new_due_date_localtz_date = due_date_localtz_date.replace(
+        second=int(new_due_time_split[2]))
     new_due_date_utc_date = new_due_date_localtz_date.astimezone(pytz.utc)
     return new_due_date_utc_date
 
@@ -87,29 +100,29 @@ def update_overdue_tasks(user_timezone, now, tasks):
         if task["due_date_utc"]:
             due_date = convert_time_str_datetime(task["due_date_utc"], user_timezone)
             if is_overdue(due_date, now):
-                new_due_date = update_to_all_day(now, task)
+                new_due_date = update_to_all_day(now)
                 task.update(due_date_utc=new_due_date)
 
 
 # Identify tasks with time strings (for example, <5:20>) and re-schedule due-time to that time
-def update_recurrance_date(user_timezone, tasks):
+def update_recurrence_date(user_timezone, tasks):
     for task in tasks:
-        if task["due_date_utc"] and is_recurrance_snooze(task["content"]):
-            new_due_time = is_recurrance_snooze(task["content"]).group(1)
+        if task["due_date_utc"] and is_recurrence_snooze(task["content"]):
+            new_due_time = is_recurrence_snooze(task["content"]).group(1)
             new_due_date_utc = replace_due_date_time(new_due_time, task["due_date_utc"], user_timezone)
             new_due_date_utc_str = convert_datetime_str(new_due_date_utc)
             task.update(due_date_utc=new_due_date_utc_str)
-            task.update(content= re.sub(is_recurrance_snooze(task["content"]).group(0), '', task["content"]))
+            task.update(content=re.sub(is_recurrence_snooze(task["content"]).group(0), '', task["content"]))
 
 
-# Run the following actions continually (every 15 minuites)
+# Run the following actions continually (every 15 minutes)
 def main():
     api = initiate_api()
     user_timezone = get_user_timezone(api)
     tasks = get_tasks(api)
     now = get_now_user_timezone(api)
     update_overdue_tasks(user_timezone, now, tasks)
-    update_recurrance_date(user_timezone, tasks)
+    update_recurrence_date(user_timezone, tasks)
     api.commit()
 
 
