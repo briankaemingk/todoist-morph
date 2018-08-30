@@ -18,6 +18,22 @@ JIT Tasking only shows you tasks when you are able to complete them. It accompli
 
 3. When 6PM rolls around, the due date for the task will be automatically changed to all-day today, and the task will automatically appear in your `Todo (Level 1)` filter.
 
+### Recurrence Task Recheduling
+
+Sometimes, your schedule requires you to postpone or reschedule repeating tasks. How do you properly postpone or reschedule a recurring task to a date *and time* outside of the regular recurrence?
+
+Recurrence scheduling allows you to postpone or reschedule a recurring task to a specific date *and time* while keeping the task recurrence in-tact.
+
+### Usage
+
+1. First off, if you need to only change the day of a recurrence, but not the time, you can do that with Todoist: to postpone a recurring task, use the [task scheduler](https://support.todoist.com/hc/articles/205325931) by right-clicking (Web, Windows, macOS) or swiping left (iOS, Android) and pick a new date from there
+
+2. If you need to not only change the day of the recurrence, but also the time, first add the time you want to reschedule the task to in the task as `<12:00>` or just `<>` if you want to change it to an all-day task
+
+3. Next, assuming you want to change the date as well, use the [task scheduler](https://support.todoist.com/hc/articles/205325931) by right-clicking (Web, Windows, macOS) or swiping left (iOS, Android) and pick a new date from there
+
+4. Todoist will move the task to the particular day you re-schedule it to and in the background, todoist-morph re-schedules your task to your desired time then removes the inputted time from the task description
+
 ## Improve Motivation -- Implemented but currently not integrated
 
 TODO: Integrate the below functionality
