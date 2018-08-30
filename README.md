@@ -22,9 +22,10 @@ JIT Tasking only shows you tasks when you are able to complete them. It accompli
 
 Sometimes, your schedule requires you to postpone or reschedule repeating tasks. How do you properly postpone or reschedule a recurring task to a date *and time* outside of the regular recurrence?
 
-Recurrence scheduling allows you to postpone or reschedule a recurring task to a specific date *and time* while keeping the task recurrence in-tact.
 
 ### Usage
+
+Recurrence scheduling allows you to postpone or reschedule a recurring task to a specific date and time while keeping the task recurrence in-tact.
 
 1. First off, if you need to only change the day of a recurrence, but not the time, you can do that with Todoist: to postpone a recurring task, use the [task scheduler](https://support.todoist.com/hc/articles/205325931) by right-clicking (Web, Windows, macOS) or swiping left (iOS, Android) and pick a new date from there
 
