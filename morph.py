@@ -17,7 +17,6 @@ def get_token():
 
 
 # Initiate and sync Todoist API
-# noinspection PyPep8Naming
 def initiate_api():
     API_TOKEN = get_token()
     if not API_TOKEN:
@@ -124,5 +123,4 @@ def main():
 # Run the following actions when a task is completed, receives the task URL
 def task_complete(task_url):
     api = initiate_api()
-    print("testing")
     api.commit()
