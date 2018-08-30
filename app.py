@@ -14,6 +14,7 @@ def index():
 def complete():
     content = request.get_json()
     url = content['url']
+    print(url)
     morph.task_complete(url)
     return 'Completed task complete actions.'
 

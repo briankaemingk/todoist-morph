@@ -124,4 +124,5 @@ def main():
 # Run the following actions when a task is completed, receives the task URL
 def task_complete(task_url):
     api = initiate_api()
+    print("testing")
     api.commit()
