@@ -22,7 +22,6 @@ JIT Tasking only shows you tasks when you are able to complete them. It accompli
 
 Sometimes, your schedule requires you to postpone or reschedule repeating tasks. How do you properly postpone or reschedule a recurring task to a date *and time* outside of the regular recurrence?
 
-
 ### Usage
 
 Recurrence scheduling allows you to postpone or reschedule a recurring task to a specific date and time while keeping the task recurrence in-tact.
