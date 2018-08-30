@@ -62,7 +62,7 @@ def get_tasks(api):
 
 # Find hours, minutes and, optionally, seconds
 def is_recurrence_snooze(task_content):
-    return re.search(r'\s<(\d+:\d+:*\d*)>', task_content)
+    return re.search(r'<(\d+:\d+:*\d*)*>', task_content)
 
 
 # Parse time string, convert to datetime object in user's timezone
@@ -78,11 +78,13 @@ def convert_datetime_str(date):
 # Replace with the user-entered hour, minute and, optionally, second, and convert to utc datetime object
 def replace_due_date_time(new_due_time, due_date_utc, user_timezone):
     due_date_localtz_date = convert_time_str_datetime(due_date_utc, user_timezone)
-    new_due_time_split = new_due_time.split(":")
-    new_due_date_localtz_date = due_date_localtz_date.replace(hour=int(new_due_time_split[0]),
-                                                              minute=int(new_due_time_split[1]))
-    if len(new_due_time_split) > 2: new_due_date_localtz_date = due_date_localtz_date.replace(
-        second=int(new_due_time_split[2]))
+    if(new_due_time):
+        new_due_time_split = new_due_time.split(":")
+        new_due_date_localtz_date = due_date_localtz_date.replace(hour=int(new_due_time_split[0]),
+                                                              minute=int(new_due_time_split[1]),
+                                                              second= int(0))
+    else:
+        new_due_date_localtz_date = due_date_localtz_date.replace(hour=23, minute=23, second= 59)
     new_due_date_utc_date = new_due_date_localtz_date.astimezone(pytz.utc)
     return new_due_date_utc_date
 
