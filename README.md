@@ -18,7 +18,7 @@ JIT Tasking only shows you tasks when you are able to complete them. It accompli
 
 3. When 6PM rolls around, the due date for the task will be automatically changed to all-day today, and the task will automatically appear in your `Todo (Level 1)` filter.
 
-### Recurrence Task Recheduling
+### Recurrence Task Rescheduling
 
 Sometimes, your schedule requires you to postpone or reschedule repeating tasks. How do you properly postpone or reschedule a recurring task to a date *and time* outside of the regular recurrence?
 
