@@ -1,4 +1,3 @@
-import habits
 import os
 from datetime import datetime
 from dateutil.parser import parse
@@ -6,7 +5,6 @@ import pytz
 import re
 from todoist.api import TodoistAPI
 import logging
-
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
@@ -89,6 +87,25 @@ def replace_due_date_time(new_due_time, due_date_utc, user_timezone):
     return new_due_date_utc_date
 
 
+# Determine if text has content text[streak n]
+def is_habit(text):
+    return re.search(r'\[streak\s(\d+)\]', text)
+
+
+# Update streak contents from text [streak n] to text [streak n+1]
+def update_streak(content, streak):
+    streak_num = '[streak {}]'.format(streak)
+    new_content = re.sub(r'\[streak\s(\d+)\]', streak_num, content)
+    return new_content
+
+
+# Find task ID from a task URL in format https://todoist.com/showTask?id=2690174754
+def parse_task_id(task_url):
+    task_match = re.search('https:\/\/todoist.com\/showTask\?id=([0-9]+)', task_url)
+    task_id = task_match.group(1)
+    return task_id
+
+
 # Identify overdue tasks and schedule them for all day
 def update_overdue_tasks(user_timezone, now, tasks):
     for task in tasks:
@@ -110,6 +127,16 @@ def update_recurrence_date(user_timezone, tasks):
             task.update(content=re.sub(is_recurrence_snooze(task["content"]).group(0), '', task["content"]))
 
 
+# If a task is a habit, increase the streak by +1
+def increment_streak(task, task_url):
+    content = task['content']
+    if is_habit(content):
+        habit = is_habit(content)
+        streak = int(habit.group(1)) + 1
+        new_content = update_streak(content, streak)
+        task.update(content=new_content)
+
+
 # Run the following actions continually (every 15 minutes)
 def main():
     api = initiate_api()
@@ -124,5 +151,7 @@ def main():
 # Run the following actions when a task is completed, receives the task URL
 def task_complete(task_url):
     api = initiate_api()
-    habits.increment_streak(api, task_url)
+    task_id = parse_task_id(task_url)
+    task = api.items.get_by_id(int(task_id))
+    increment_streak(task, task_url)
     api.commit()
