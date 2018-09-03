@@ -1,4 +1,4 @@
-import morph, habits, os, logging
+import morph, os, logging
 from flask import Flask, request
 
 app = Flask(__name__)
