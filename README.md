@@ -34,9 +34,7 @@ Recurrence scheduling allows you to postpone or reschedule a recurring task to a
 
 4. Todoist will move the task to the particular day you re-schedule it to and in the background, todoist-morph re-schedules your task to your desired time then removes the inputted time from the task description
 
-## Improve Motivation -- Implemented but currently not integrated
-
-TODO: Integrate the below functionality
+## Improve Motivation
 
 An automation to enable habit tracking in todoist. 
 
@@ -85,12 +83,26 @@ This is a different flavor of the originally implemented [habitist](https://gith
     - Hit Create Action
     - If you want this app to run more frequently than once an hour, at a maximum of ever 15 minutes, then repeat the above steps, creating applets that run at `:15` and `:30` and `:45` minutes past the hour.
     
-6. Create the `Todo (Level 1) filter` in Todoist
+6. On [IFTTT](http://ifttt.com/), [create](https://ifttt.com/create) another new applet. 
+    - On THIS, select Todoist > 'New Completed Task' > 'Any Project' 
+    - On THAT, select Webhooks > Make a web request
+    - Set URL to your heroku app URL:
+    ```
+    https://your-todoist-morph-app-name.herokuapp.com/complete
+    ```
+    - Set METHOD to POST
+    - Set CONTENT TYPE to `application/json`
+    - Set BODY to 
+    ```
+    { "url":"{{LinkToTask}}" }
+    ```
+    
+7. Create the `Todo (Level 1) filter` in Todoist
     - Open Todoist and create a new filter 
     - In NAME, enter `Todo (Level 1)`
     - In QUERY, enter `due after: tod 23:59 & due before: tom 00:00`
 
-7. Add a task to test it out. See the [Just-In-Time Tasking](#just-in-time-tasking) useage section for ideas.
+8. Add a task to test it out. See the [Just-In-Time Tasking](#just-in-time-tasking) useage section for ideas.
     
  [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
 
