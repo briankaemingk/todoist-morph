@@ -1,5 +1,5 @@
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from dateutil.parser import parse
 import pytz
 import re
@@ -26,9 +26,9 @@ def initiate_api():
     return api
 
 
-# If the task is due today and it is due in the past
+# If the task is due in the past
 def is_overdue(due_date, now):
-    if due_date <= now and due_date.date() == now.date(): return 1
+    if due_date <= now : return 1
 
 
 # Update due date to end of today (default for all day tasks)
@@ -93,10 +93,10 @@ def is_habit(text):
 
 
 # Update streak contents from text [streak n] to text [streak n+1]
-def update_streak(content, streak):
+def update_streak(task, streak):
     streak_num = '[streak {}]'.format(streak)
-    new_content = re.sub(r'\[streak\s(\d+)\]', streak_num, content)
-    return new_content
+    new_content = re.sub(r'\[streak\s(\d+)\]', streak_num, task['content'])
+    task.update(content=new_content)
 
 
 # Find task ID from a task URL in format https://todoist.com/showTask?id=2690174754
@@ -106,14 +106,25 @@ def parse_task_id(task_url):
     return task_id
 
 
+# If a task
+def is_due_yesterday(due_date, now):
+    yesterday = now - timedelta(1)
+    yesterday.strftime('%m-%d-%y')
+    if due_date.strftime('%m-%d-%y') == yesterday.strftime('%m-%d-%y') : return 1
+
+
 # Identify overdue tasks and schedule them for all day
 def update_overdue_tasks(user_timezone, now, tasks):
     for task in tasks:
-        if task["due_date_utc"]:
-            due_date = convert_time_str_datetime(task["due_date_utc"], user_timezone)
+        due_date_utc = task["due_date_utc"]
+        if due_date_utc:
+            due_date = convert_time_str_datetime(due_date_utc, user_timezone)
             if is_overdue(due_date, now):
                 new_due_date = update_to_all_day(now)
                 task.update(due_date_utc=new_due_date)
+            if is_habit(task['content']) and is_due_yesterday(due_date, now):
+                update_streak(task, 0)
+                task.update(date_string=task['date_string'] + ' starting tod')
 
 
 # Identify tasks with time strings (for example, <5:20>) and re-schedule due-time to that time
@@ -133,8 +144,7 @@ def increment_streak(task, task_url):
     if is_habit(content):
         habit = is_habit(content)
         streak = int(habit.group(1)) + 1
-        new_content = update_streak(content, streak)
-        task.update(content=new_content)
+        update_streak(task, streak)
 
 
 # Run the following actions continually (every 15 minutes)
