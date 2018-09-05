@@ -26,11 +26,6 @@ def initiate_api():
     return api
 
 
-# If the task is due in the past
-def is_overdue(due_date, now):
-    if due_date <= now : return 1
-
-
 # Update due date to end of today (default for all day tasks)
 def update_to_all_day(now):
     new_due_date = datetime(year=now.year,
@@ -119,11 +114,12 @@ def update_overdue_tasks(user_timezone, now, tasks):
         due_date_utc = task["due_date_utc"]
         if due_date_utc:
             due_date = convert_time_str_datetime(due_date_utc, user_timezone)
-            if is_overdue(due_date, now):
-                new_due_date = update_to_all_day(now)
-                task.update(due_date_utc=new_due_date)
+            # If the task is due today and it is due in the past
+            if due_date <= now and due_date.date() == now.date():
+                task.update(due_date_utc=update_to_all_day(now))
             if is_habit(task['content']) and is_due_yesterday(due_date, now):
                 update_streak(task, 0)
+                task.update(due_date_utc=update_to_all_day(now))
                 task.update(date_string=task['date_string'] + ' starting tod')
 
 
