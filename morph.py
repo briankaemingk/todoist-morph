@@ -130,8 +130,13 @@ def update_recurrence_date(user_timezone, tasks):
             new_due_time = is_recurrence_snooze(task["content"]).group(1)
             new_due_date_utc = replace_due_date_time(new_due_time, task["due_date_utc"], user_timezone)
             new_due_date_utc_str = convert_datetime_str(new_due_date_utc)
-            task.update(due_date_utc=new_due_date_utc_str)
+            # # If the new due date is after the old due date
+            # if new_due_date_utc > convert_time_str_datetime(task["due_date_utc"], user_timezone):
+            #     task.update(content=re.sub(is_recurrence_snooze(task["content"]).group(0), '', task["content"]))
+            # else:
+            #     task.update(content= re.sub(is_recurrence_snooze(task["content"]).group(0), '', task["content"]) + '->')
             task.update(content=re.sub(is_recurrence_snooze(task["content"]).group(0), '', task["content"]))
+            task.update(due_date_utc=new_due_date_utc_str)
 
 
 # If a task is a habit, increase the streak by +1
