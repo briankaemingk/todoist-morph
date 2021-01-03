@@ -10,7 +10,7 @@ MarkupSafe==1.0
 python-dateutil==2.7.3
 python-dotenv==0.9.1
 pytz==2018.5
-requests==2.19.1
+requests==2.20.0
 six==1.11.0
 todoist-python==7.0.18
 urllib3==1.23
